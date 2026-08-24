@@ -1,5 +1,10 @@
 package com.shadowbase.shadowbasebackend.service;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.springframework.stereotype.Service;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -17,8 +22,8 @@ public class ContainerService {
         postgresContainer = new PostgreSQLContainer<>("postgres:16")
                 .withDatabaseName("shadowbase")
                 .withUsername("shadowbase")
-                .withPassword("shadowbase");
-
+                .withPassword("shadowbase123");
+                
         postgresContainer.start();
 
         return "PostgreSQL Shadow container started successfully on port: "
@@ -42,5 +47,40 @@ public class ContainerService {
         }
 
         return "No running Shadow PostgreSQL container found.";
+    }
+    public String seedDatabase() {
+
+        if (postgresContainer == null || !postgresContainer.isRunning()) {
+            return "No running Shadow PostgreSQL container found.";
+        }
+        String jdbcUrl = postgresContainer.getJdbcUrl() ;
+        String username = postgresContainer.getUsername();
+        String password = postgresContainer.getPassword();
+
+        try (Connection connection =
+                     DriverManager.getConnection(jdbcUrl, username, password);
+             Statement statement = connection.createStatement()) {
+
+            statement.execute("""
+                CREATE TABLE IF NOT EXISTS customers (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(100),
+                    email VARCHAR(150)
+                )
+            """);
+
+            statement.execute("""
+                INSERT INTO customers (name, email)
+                VALUES
+                    ('Harshada', 'harshada@example.com'),
+                    ('Rahul', 'rahul@example.com'),
+                    ('Priya', 'priya@example.com')
+            """);
+
+            return "Shadow database seeded successfully!";
+
+        } catch (SQLException e) {
+            return "Failed to seed Shadow database: " + e.getMessage();
+        }
     }
 }

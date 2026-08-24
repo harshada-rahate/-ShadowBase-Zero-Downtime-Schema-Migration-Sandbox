@@ -26,6 +26,11 @@ public class ContainerController {
     public String getStatus() {
         return containerService.getStatus();
     }
+    
+    @PostMapping("/seed")
+    public String seedDatabase() {
+        return containerService.seedDatabase();
+    }
 
     @PostMapping("/stop")
     public String stopContainer() {
