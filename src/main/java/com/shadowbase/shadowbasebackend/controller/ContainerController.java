@@ -31,7 +31,10 @@ public class ContainerController {
     public String seedDatabase() {
         return containerService.seedDatabase();
     }
-
+    @GetMapping("/customers")
+    public String getCustomers() {
+        return containerService.getCustomers();
+    }
     @PostMapping("/stop")
     public String stopContainer() {
         return containerService.stopContainer();

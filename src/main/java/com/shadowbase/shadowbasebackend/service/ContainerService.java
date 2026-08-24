@@ -83,4 +83,39 @@ public class ContainerService {
             return "Failed to seed Shadow database: " + e.getMessage();
         }
     }
+    public String getCustomers() {
+
+        if (postgresContainer == null || !postgresContainer.isRunning()) {
+            return "No running Shadow PostgreSQL container found.";
+        }
+
+        String jdbcUrl = postgresContainer.getJdbcUrl();
+        String username = postgresContainer.getUsername();
+        String password = postgresContainer.getPassword();
+
+        StringBuilder result = new StringBuilder();
+
+        try (Connection connection =
+                     DriverManager.getConnection(jdbcUrl, username, password);
+             Statement statement = connection.createStatement();
+             var resultSet = statement.executeQuery(
+                     "SELECT id, name, email FROM customers")) {
+
+            while (resultSet.next()) {
+                result.append("ID: ")
+                      .append(resultSet.getInt("id"))
+                      .append(", Name: ")
+                      .append(resultSet.getString("name"))
+                      .append(", Email: ")
+                      .append(resultSet.getString("email"))
+                      .append("\n");
+            }
+
+            return result.toString();
+
+        } catch (SQLException e) {
+            return "Failed to fetch customers: " + e.getMessage();
+        }
+    }
+    
 }
