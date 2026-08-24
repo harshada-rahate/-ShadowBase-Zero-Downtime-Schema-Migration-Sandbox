@@ -117,5 +117,26 @@ public class ContainerService {
             return "Failed to fetch customers: " + e.getMessage();
         }
     }
-    
+    public String executeMigration(String sql) {
+
+        if (postgresContainer == null || !postgresContainer.isRunning()) {
+            return "No running Shadow PostgreSQL container found.";
+        }
+
+        String jdbcUrl = postgresContainer.getJdbcUrl();
+        String username = postgresContainer.getUsername();
+        String password = postgresContainer.getPassword();
+
+        try (Connection connection =
+                     DriverManager.getConnection(jdbcUrl, username, password);
+             Statement statement = connection.createStatement()) {
+
+            statement.execute(sql);
+
+            return "Migration executed successfully!";
+
+        } catch (SQLException e) {
+            return "Migration failed: " + e.getMessage();
+        }
+    }
 }
