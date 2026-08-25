@@ -41,6 +41,11 @@ public class ContainerController {
         return containerService.executeMigration(sql);
     }
     
+    @PostMapping("/rollback")
+    public String rollbackMigration(@RequestBody String sql) {
+        return containerService.rollbackMigration(sql);
+    }
+    
     @GetMapping("/migrations")
     public String getMigrationHistory() {
         return containerService.getMigrationHistory();

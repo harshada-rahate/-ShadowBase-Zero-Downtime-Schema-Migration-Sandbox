@@ -191,4 +191,26 @@ public class ContainerService {
             return "Failed to fetch migration history: " + e.getMessage();
         }
     }
+    public String rollbackMigration(String sql) {
+
+        if (postgresContainer == null || !postgresContainer.isRunning()) {
+            return "No running Shadow PostgreSQL container found.";
+        }
+
+        String jdbcUrl = postgresContainer.getJdbcUrl();
+        String username = postgresContainer.getUsername();
+        String password = postgresContainer.getPassword();
+
+        try (Connection connection =
+                     DriverManager.getConnection(jdbcUrl, username, password);
+             Statement statement = connection.createStatement()) {
+
+            statement.execute(sql);
+
+            return "Rollback executed successfully!";
+
+        } catch (SQLException e) {
+            return "Rollback failed: " + e.getMessage();
+        }
+    }
 }
