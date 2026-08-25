@@ -40,6 +40,11 @@ public class ContainerController {
     public String executeMigration(@RequestBody String sql) {
         return containerService.executeMigration(sql);
     }
+    
+    @GetMapping("/migrations")
+    public String getMigrationHistory() {
+        return containerService.getMigrationHistory();
+    } 
     @PostMapping("/stop")
     public String stopContainer() {
         return containerService.stopContainer();

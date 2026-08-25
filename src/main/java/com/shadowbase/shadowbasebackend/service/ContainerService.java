@@ -68,6 +68,14 @@ public class ContainerService {
                     email VARCHAR(150)
                 )
             """);
+            
+            statement.execute("""
+            	    CREATE TABLE IF NOT EXISTS migration_history (
+            	        id SERIAL PRIMARY KEY,
+            	        migration_sql TEXT NOT NULL,
+            	        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            	    )
+            	""");
 
             statement.execute("""
                 INSERT INTO customers (name, email)
@@ -131,12 +139,56 @@ public class ContainerService {
                      DriverManager.getConnection(jdbcUrl, username, password);
              Statement statement = connection.createStatement()) {
 
-            statement.execute(sql);
+        	statement.execute(sql);
 
-            return "Migration executed successfully!";
+        	String historySql =
+        	        "INSERT INTO migration_history (migration_sql) VALUES (?)";
+
+        	try (var preparedStatement = connection.prepareStatement(historySql)) {
+        	    preparedStatement.setString(1, sql);
+        	    preparedStatement.executeUpdate();
+        	}
+
+        	return "Migration executed successfully!";
 
         } catch (SQLException e) {
             return "Migration failed: " + e.getMessage();
+        }
+    }
+    public String getMigrationHistory() {
+
+        if (postgresContainer == null || !postgresContainer.isRunning()) {
+            return "No running Shadow PostgreSQL container found.";
+        }
+
+        String jdbcUrl = postgresContainer.getJdbcUrl();
+        String username = postgresContainer.getUsername();
+        String password = postgresContainer.getPassword();
+
+        StringBuilder result = new StringBuilder();
+
+        try (Connection connection =
+                     DriverManager.getConnection(jdbcUrl, username, password);
+             Statement statement = connection.createStatement();
+             var resultSet = statement.executeQuery(
+                     "SELECT id, migration_sql, executed_at " +
+                     "FROM migration_history ORDER BY id")) {
+
+            while (resultSet.next()) {
+
+                result.append("Migration ID: ")
+                      .append(resultSet.getInt("id"))
+                      .append("\nSQL: ")
+                      .append(resultSet.getString("migration_sql"))
+                      .append("\nExecuted At: ")
+                      .append(resultSet.getTimestamp("executed_at"))
+                      .append("\n\n");
+            }
+
+            return result.toString();
+
+        } catch (SQLException e) {
+            return "Failed to fetch migration history: " + e.getMessage();
         }
     }
 }
