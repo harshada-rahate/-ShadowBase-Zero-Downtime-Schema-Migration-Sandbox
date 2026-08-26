@@ -130,6 +130,15 @@ public class ContainerService {
         if (postgresContainer == null || !postgresContainer.isRunning()) {
             return "No running Shadow PostgreSQL container found.";
         }
+        
+        String normalizedSql = sql.trim().toUpperCase();
+
+        if (normalizedSql.startsWith("DROP DATABASE")
+                || normalizedSql.startsWith("DROP SCHEMA")) {
+
+            return "Migration blocked: Dangerous SQL operation is not allowed!";
+        }
+
 
         String jdbcUrl = postgresContainer.getJdbcUrl();
         String username = postgresContainer.getUsername();
