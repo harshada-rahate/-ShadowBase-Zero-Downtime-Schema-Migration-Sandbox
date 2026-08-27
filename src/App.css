@@ -1,0 +1,539 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #080c18;
+  color: #f4f7ff;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.app {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 85% 5%,
+      rgba(79, 105, 210, 0.18),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 10% 35%,
+      rgba(55, 78, 150, 0.12),
+      transparent 28%
+    ),
+    #080c18;
+}
+
+/* ================= HEADER ================= */
+
+.header {
+  height: 78px;
+  padding: 0 55px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #202945;
+  background: rgba(8, 12, 24, 0.96);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 25px;
+  letter-spacing: 1px;
+}
+
+.header p {
+  margin: 5px 0 0;
+  color: #7f8aa5;
+  font-size: 13px;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border: 1px solid #273252;
+  border-radius: 20px;
+  background: #10172b;
+  color: #b9c4dd;
+  font-size: 13px;
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #39d98a;
+  box-shadow: 0 0 12px #39d98a;
+}
+
+/* ================= DASHBOARD ================= */
+
+.dashboard {
+  width: min(1200px, 92%);
+  margin: 35px auto 60px;
+}
+
+/* ================= HERO ================= */
+
+.hero-card {
+  min-height: 280px;
+  padding: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid #273252;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #111a35, #0e1528);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.badge {
+  display: inline-block;
+  padding: 7px 11px;
+  border: 1px solid #34446f;
+  border-radius: 20px;
+  background: rgba(75, 102, 190, 0.08);
+  color: #8da9ff;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+}
+
+.hero-card h2 {
+  margin: 20px 0 12px;
+  font-size: 42px;
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.hero-card h2 span {
+  color: #7c9cff;
+}
+
+.hero-card p {
+  max-width: 650px;
+  margin-bottom: 0;
+  color: #9ca7c1;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.hero-icon {
+  width: 145px;
+  height: 145px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #45598e;
+  border-radius: 28px;
+  color: #9ab1ff;
+  font-size: 38px;
+  font-weight: bold;
+  background: linear-gradient(145deg, #172347, #111a34);
+  box-shadow:
+    0 0 45px rgba(90, 120, 255, 0.12),
+    inset 0 0 30px rgba(90, 120, 255, 0.05);
+}
+
+/* ================= CARDS ================= */
+
+.cards {
+  margin-top: 25px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  padding: 25px;
+  min-height: 300px;
+  border: 1px solid #273252;
+  border-radius: 16px;
+  background: #10162a;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.16);
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  border-color: #394a78;
+  transform: translateY(-2px);
+}
+
+.card-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  border: 1px solid #303f68;
+  border-radius: 10px;
+  background: #1a2647;
+  color: #8fa8ff;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.card h3 {
+  margin: 0 0 10px;
+  font-size: 19px;
+}
+
+.card p {
+  min-height: 55px;
+  margin-bottom: 18px;
+  color: #8e99b4;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* ================= BUTTONS ================= */
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  padding: 11px 16px;
+  border-radius: 9px;
+  background: #5878ff;
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+button.secondary {
+  background: #202b48;
+  color: #b9c7e8;
+}
+
+button.danger {
+  background: #8e3040;
+}
+
+button.danger:hover {
+  background: #a23b4d;
+}
+
+/* ================= SQL EDITOR ================= */
+
+/* Old textarea editor */
+
+textarea {
+  width: 100%;
+  height: 82px;
+  resize: vertical;
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #303d5d;
+  border-radius: 9px;
+  outline: none;
+  background: #090e1c;
+  color: #cbd6f5;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+textarea::placeholder {
+  color: #59647d;
+}
+
+textarea:focus {
+  border-color: #5878ff;
+  box-shadow: 0 0 0 2px rgba(88, 120, 255, 0.1);
+}
+
+/* Monaco Editor */
+
+.editor-container {
+  width: 100%;
+  height: 180px;
+  margin: 12px 0;
+  overflow: hidden;
+  border: 1px solid #303d5d;
+  border-radius: 9px;
+  background: #090e1c;
+}
+
+.editor-container:focus-within {
+  border-color: #5878ff;
+  box-shadow: 0 0 0 2px rgba(88, 120, 255, 0.1);
+}
+
+/* ================= DATABASE ================= */
+
+.database-section {
+  margin-top: 25px;
+  padding: 28px;
+  border: 1px solid #273252;
+  border-radius: 16px;
+  background: #10162a;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.16);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  margin: 12px 0 0;
+  font-size: 22px;
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid #222c46;
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+
+th,
+td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #242e48;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+th {
+  background: #121b31;
+  color: #8fa8ff;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+td {
+  background: #0e1426;
+  color: #c3cce0;
+  font-size: 14px;
+}
+
+tbody tr:hover td {
+  background: #121a30;
+}
+
+.empty {
+  padding: 35px;
+  text-align: center;
+  color: #77819a;
+}
+
+/* ================= SYSTEM MESSAGE ================= */
+
+.bottom-section {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.message-box {
+  flex: 1;
+  padding: 18px;
+  border: 1px solid #273252;
+  border-radius: 12px;
+  background: #10162a;
+}
+
+.message-box strong {
+  color: #8fa8ff;
+  font-size: 13px;
+}
+
+.message-box p {
+  margin: 7px 0 0;
+  color: #a7b1c9;
+  font-size: 14px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 950px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: auto;
+  }
+
+  .hero-card h2 {
+    font-size: 34px;
+  }
+}
+
+@media (max-width: 700px) {
+  .header {
+    height: auto;
+    min-height: 78px;
+    padding: 15px 20px;
+    gap: 15px;
+  }
+
+  .header h1 {
+    font-size: 21px;
+  }
+
+  .header p {
+    font-size: 11px;
+  }
+
+  .status {
+    font-size: 11px;
+    padding: 7px 10px;
+  }
+
+  .dashboard {
+    width: 94%;
+    margin-top: 20px;
+  }
+
+  .hero-card {
+    padding: 28px;
+    min-height: auto;
+  }
+
+  .hero-card h2 {
+    font-size: 28px;
+  }
+
+  .hero-card p {
+    font-size: 13px;
+  }
+
+  .hero-icon {
+    display: none;
+  }
+
+  .bottom-section {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .bottom-section .danger {
+    width: 100%;
+  }
+}
+
+@media (max-width: 450px) {
+  .header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .status {
+    align-self: flex-start;
+  }
+
+  .hero-card {
+    padding: 22px;
+  }
+
+  .hero-card h2 {
+    font-size: 25px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .button-group button {
+    width: 100%;
+  }
+
+  .database-section {
+    padding: 18px;
+  }
+
+  .section-header {
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .editor-container {
+    height: 160px;
+  }
+}
+/* ================= FINAL UI FIX ================= */
+
+.hero-card h2 {
+  color: #f4f7ff;
+}
+
+.hero-card h2 span {
+  color: #7c9cff;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card {
+  width: 100%;
+  min-width: 0;
+}
+
+.card h3 {
+  color: #f4f7ff;
+}
+
+.card p {
+  color: #9ca7c1;
+}
+
+.editor-container {
+  width: 100%;
+  height: 180px;
+  margin: 12px 0;
+  overflow: hidden;
+  border: 1px solid #303d5d;
+  border-radius: 9px;
+  background: #090e1c;
+}
+
+.editor-container:focus-within {
+  border-color: #5878ff;
+  box-shadow: 0 0 0 2px rgba(88, 120, 255, 0.1);
+}
+
+@media (max-width: 950px) {
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
