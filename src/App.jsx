@@ -8,9 +8,14 @@ function App() {
   const [status, setStatus] = useState("Checking...");
   const [customers, setCustomers] = useState([]);
   const [migrationSql, setMigrationSql] = useState(
-    "ALTER TABLE customers ADD COLUMN city VARCHAR(100);"
+     "ALTER TABLE customers ADD COLUMN address VARCHAR(200);"
   );
   const [message, setMessage] = useState("");
+  const [metrics, setMetrics] = useState({
+  replayed: 0,
+  successful: 0,
+  errors: 0,
+});
 
   const checkStatus = async () => {
     try {
@@ -63,34 +68,57 @@ function App() {
       setMessage("Could not load customers.");
     }
   };
+const runMigration = async () => {
+  if (!migrationSql.trim()) {
+    setMessage("Please enter migration SQL.");
+    return;
+  }
 
-  const runMigration = async () => {
-    if (!migrationSql.trim()) {
-      setMessage("Please enter migration SQL.");
-      return;
-    }
+  try {
+    setMessage("Running migration...");
 
-    try {
-      setMessage("Running migration...");
+    const response = await fetch(`${API}/api/container/migrate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sql: migrationSql,
+      }),
+    });
 
-      const response = await fetch(`${API}/api/container/migrate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sql: migrationSql,
-        }),
-      });
+    const data = await response.text();
 
-      const data = await response.text();
-      setMessage(data);
+    if (response.ok) {
+      setMessage(`✅ ${data}`);
+
+      setMetrics((prev) => ({
+        ...prev,
+        replayed: prev.replayed + 1,
+        successful: prev.successful + 1,
+      }));
 
       loadCustomers();
-    } catch (error) {
-      setMessage("Migration request failed.");
+    } else {
+      setMessage(`❌ ${data}`);
+
+      setMetrics((prev) => ({
+        ...prev,
+        replayed: prev.replayed + 1,
+        errors: prev.errors + 1,
+      }));
     }
-  };
+  } catch (error) {
+    setMessage("❌ Migration request failed.");
+
+    setMetrics((prev) => ({
+      ...prev,
+      replayed: prev.replayed + 1,
+      errors: prev.errors + 1,
+    }));
+  }
+};
+  
 
   const stopContainer = async () => {
     try {
@@ -145,7 +173,31 @@ function App() {
 
           <div className="hero-icon">DB</div>
         </section>
+          <section className="metrics-section">
+  <div className="metric-card">
+    <p>Queries Replayed</p>
+    <h2>{metrics.replayed}</h2>
+  </div>
 
+  <div className="metric-card">
+    <p>Successful</p>
+    <h2>{metrics.successful}</h2>
+  </div>
+
+  <div className="metric-card">
+    <p>SQL Errors</p>
+    <h2>{metrics.errors}</h2>
+  </div>
+
+  <div className="metric-card">
+    <p>Error Rate</p>
+    <h2>
+      {metrics.replayed === 0
+        ? "0%"
+        : `${((metrics.errors / metrics.replayed) * 100).toFixed(1)}%`}
+    </h2>
+  </div>
+</section>
         <section className="cards">
           <div className="card">
             <div className="card-icon">01</div>
@@ -227,6 +279,7 @@ function App() {
                   <th>Email</th>
                   <th>Phone</th>
                   <th>City</th>
+                  <th>Address</th>
                 </tr>
               </thead>
 
@@ -239,11 +292,12 @@ function App() {
                       <td>{customer.email}</td>
                       <td>{customer.phone || "-"}</td>
                       <td>{customer.city || "-"}</td>
+                      <td>{customer.address || "-"}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="empty">
+                    <td colSpan="6" className="empty">
                       No customer records loaded.
                     </td>
                   </tr>

@@ -537,3 +537,41 @@ tbody tr:hover td {
     grid-template-columns: 1fr;
   }
 }
+.metrics-section {
+  margin-top: 25px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.metric-card {
+  padding: 22px;
+  border: 1px solid #273252;
+  border-radius: 14px;
+  background: #10162a;
+}
+
+.metric-card p {
+  margin: 0;
+  color: #8fa8ff;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.metric-card h2 {
+  margin: 14px 0 0;
+  font-size: 32px;
+  color: #ffffff;
+}
+
+@media (max-width: 950px) {
+  .metrics-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .metrics-section {
+    grid-template-columns: 1fr;
+  }
+}
