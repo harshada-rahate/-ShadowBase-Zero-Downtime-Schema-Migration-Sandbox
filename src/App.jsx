@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import "./App.css";
+import MetricsDashboard from "./MetricsDashboard";
 
 const API = "http://localhost:8080";
 
@@ -10,13 +11,8 @@ function App() {
   const [migrationSql, setMigrationSql] = useState(
      "ALTER TABLE customers ADD COLUMN address VARCHAR(200);"
   );
-  const [message, setMessage] = useState("");
-  const [metrics, setMetrics] = useState({
-  replayed: 0,
-  successful: 0,
-  errors: 0,
-});
-
+  
+const [message, setMessage] = useState("");
   const checkStatus = async () => {
     try {
       const response = await fetch(`${API}/api/container/status`);
@@ -92,30 +88,18 @@ const runMigration = async () => {
     if (response.ok) {
       setMessage(`✅ ${data}`);
 
-      setMetrics((prev) => ({
-        ...prev,
-        replayed: prev.replayed + 1,
-        successful: prev.successful + 1,
-      }));
+      
 
       loadCustomers();
     } else {
       setMessage(`❌ ${data}`);
 
-      setMetrics((prev) => ({
-        ...prev,
-        replayed: prev.replayed + 1,
-        errors: prev.errors + 1,
-      }));
+      
     }
   } catch (error) {
     setMessage("❌ Migration request failed.");
 
-    setMetrics((prev) => ({
-      ...prev,
-      replayed: prev.replayed + 1,
-      errors: prev.errors + 1,
-    }));
+    
   }
 };
   
@@ -173,31 +157,7 @@ const runMigration = async () => {
 
           <div className="hero-icon">DB</div>
         </section>
-          <section className="metrics-section">
-  <div className="metric-card">
-    <p>Queries Replayed</p>
-    <h2>{metrics.replayed}</h2>
-  </div>
-
-  <div className="metric-card">
-    <p>Successful</p>
-    <h2>{metrics.successful}</h2>
-  </div>
-
-  <div className="metric-card">
-    <p>SQL Errors</p>
-    <h2>{metrics.errors}</h2>
-  </div>
-
-  <div className="metric-card">
-    <p>Error Rate</p>
-    <h2>
-      {metrics.replayed === 0
-        ? "0%"
-        : `${((metrics.errors / metrics.replayed) * 100).toFixed(1)}%`}
-    </h2>
-  </div>
-</section>
+          <MetricsDashboard />
         <section className="cards">
           <div className="card">
             <div className="card-icon">01</div>
