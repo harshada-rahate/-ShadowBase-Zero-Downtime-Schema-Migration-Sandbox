@@ -33,7 +33,7 @@ public class ContainerController {
         return containerService.seedDatabase();
     }
     @GetMapping("/customers")
-    public String getCustomers() {
+    public Object getCustomers() { 
         return containerService.getCustomers();
     }
     @PostMapping("/migrate")
