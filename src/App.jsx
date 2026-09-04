@@ -122,6 +122,7 @@ const runMigration = async () => {
 
   useEffect(() => {
     checkStatus();
+    loadCustomers();
   }, []);
 
   return (

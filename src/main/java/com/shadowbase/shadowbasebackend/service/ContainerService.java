@@ -2,6 +2,7 @@ package com.shadowbase.shadowbasebackend.service;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -68,18 +69,38 @@ public class ContainerService {
     }
 
     // =========================
+    // ACCESSORS FOR CDC REPLAYER
+    // =========================
+
+    public boolean isShadowRunning() {
+        return postgresContainer != null && postgresContainer.isRunning();
+    }
+
+    public String getJdbcUrl() {
+        return postgresContainer.getJdbcUrl();
+    }
+
+    public String getUsername() {
+        return postgresContainer.getUsername();
+    }
+
+    public String getPassword() {
+        return postgresContainer.getPassword();
+    }
+
+    // =========================
     // SEED DATABASE
     // =========================
 
     public String seedDatabase() {
 
-        if (postgresContainer == null || !postgresContainer.isRunning()) {
+        if (!isShadowRunning()) {
             return "No running Shadow PostgreSQL container found.";
         }
 
-        String jdbcUrl = postgresContainer.getJdbcUrl();
-        String username = postgresContainer.getUsername();
-        String password = postgresContainer.getPassword();
+        String jdbcUrl = getJdbcUrl();
+        String username = getUsername();
+        String password = getPassword();
 
         try (Connection connection =
                      DriverManager.getConnection(jdbcUrl, username, password);
@@ -107,6 +128,7 @@ public class ContainerService {
                     ('Harshada', 'harshada@example.com'),
                     ('Rahul', 'rahul@example.com'),
                     ('Priya', 'priya@example.com')
+                ON CONFLICT DO NOTHING
             """);
 
             return "Shadow database seeded successfully!";
@@ -125,34 +147,50 @@ public class ContainerService {
 
         List<Map<String, Object>> customers = new ArrayList<>();
 
-        if (postgresContainer == null || !postgresContainer.isRunning()) {
+        if (!isShadowRunning()) {
             return customers;
         }
 
-        String jdbcUrl = postgresContainer.getJdbcUrl();
-        String username = postgresContainer.getUsername();
-        String password = postgresContainer.getPassword();
+        String jdbcUrl = getJdbcUrl();
+        String username = getUsername();
+        String password = getPassword();
 
         try (Connection connection =
                      DriverManager.getConnection(jdbcUrl, username, password);
-             Statement statement = connection.createStatement();
-             var resultSet = statement.executeQuery(
-                     "SELECT id, name, email, " +
-                     "NULL AS phone, NULL AS city, " +
-                     "address FROM customers")) {
+             Statement statement = connection.createStatement()) {
 
-            while (resultSet.next()) {
+            List<String> availableColumns = new ArrayList<>();
+            try (ResultSet columns = connection.getMetaData().getColumns(
+                    null, null, "customers", null)) {
+                while (columns.next()) {
+                    availableColumns.add(columns.getString("COLUMN_NAME"));
+                }
+            }
 
-                Map<String, Object> customer = new HashMap<>();
+            StringBuilder select = new StringBuilder("SELECT id, name, email");
+            for (String extra : List.of("phone", "city", "address")) {
+                if (availableColumns.contains(extra)) {
+                    select.append(", ").append(extra);
+                } else {
+                    select.append(", NULL AS ").append(extra);
+                }
+            }
+            select.append(" FROM customers ORDER BY id");
 
-                customer.put("id", resultSet.getInt("id"));
-                customer.put("name", resultSet.getString("name"));
-                customer.put("email", resultSet.getString("email"));
-                customer.put("phone", resultSet.getString("phone"));
-                customer.put("city", resultSet.getString("city"));
-                customer.put("address", resultSet.getString("address"));
+            try (ResultSet resultSet = statement.executeQuery(select.toString())) {
+                while (resultSet.next()) {
 
-                customers.add(customer);
+                    Map<String, Object> customer = new HashMap<>();
+
+                    customer.put("id", resultSet.getInt("id"));
+                    customer.put("name", resultSet.getString("name"));
+                    customer.put("email", resultSet.getString("email"));
+                    customer.put("phone", resultSet.getString("phone"));
+                    customer.put("city", resultSet.getString("city"));
+                    customer.put("address", resultSet.getString("address"));
+
+                    customers.add(customer);
+                }
             }
 
             return customers;
@@ -170,8 +208,12 @@ public class ContainerService {
 
     public String executeMigration(String sql) {
 
-        if (postgresContainer == null || !postgresContainer.isRunning()) {
+        if (!isShadowRunning()) {
             return "No running Shadow PostgreSQL container found.";
+        }
+
+        if (sql == null || sql.trim().isEmpty()) {
+            return "Migration SQL cannot be empty.";
         }
 
         String normalizedSql = sql.trim().toUpperCase();
@@ -182,9 +224,9 @@ public class ContainerService {
             return "Migration blocked: Dangerous SQL operation is not allowed!";
         }
 
-        String jdbcUrl = postgresContainer.getJdbcUrl();
-        String username = postgresContainer.getUsername();
-        String password = postgresContainer.getPassword();
+        String jdbcUrl = getJdbcUrl();
+        String username = getUsername();
+        String password = getPassword();
 
         try (Connection connection =
                      DriverManager.getConnection(jdbcUrl, username, password);
@@ -216,20 +258,20 @@ public class ContainerService {
 
     public String getMigrationHistory() {
 
-        if (postgresContainer == null || !postgresContainer.isRunning()) {
+        if (!isShadowRunning()) {
             return "No running Shadow PostgreSQL container found.";
         }
 
-        String jdbcUrl = postgresContainer.getJdbcUrl();
-        String username = postgresContainer.getUsername();
-        String password = postgresContainer.getPassword();
+        String jdbcUrl = getJdbcUrl();
+        String username = getUsername();
+        String password = getPassword();
 
         StringBuilder result = new StringBuilder();
 
         try (Connection connection =
                      DriverManager.getConnection(jdbcUrl, username, password);
              Statement statement = connection.createStatement();
-             var resultSet = statement.executeQuery(
+             ResultSet resultSet = statement.executeQuery(
                      "SELECT id, migration_sql, executed_at " +
                      "FROM migration_history ORDER BY id")) {
 
@@ -263,7 +305,7 @@ public class ContainerService {
 
     public String rollbackMigration(String sql) {
 
-        if (postgresContainer == null || !postgresContainer.isRunning()) {
+        if (!isShadowRunning()) {
             return "No running Shadow PostgreSQL container found.";
         }
 
@@ -271,9 +313,9 @@ public class ContainerService {
             return "Rollback SQL cannot be empty.";
         }
 
-        String jdbcUrl = postgresContainer.getJdbcUrl();
-        String username = postgresContainer.getUsername();
-        String password = postgresContainer.getPassword();
+        String jdbcUrl = getJdbcUrl();
+        String username = getUsername();
+        String password = getPassword();
 
         try (Connection connection =
                      DriverManager.getConnection(jdbcUrl, username, password);
