@@ -206,8 +206,12 @@ public class ContainerService {
     // EXECUTE MIGRATION
     // =========================
 
+    
+    // =========================
+    // MIGRATION HISTORY
+    // =========================
+ // EXECUTE MIGRATION
     public String executeMigration(String sql) {
-
         if (!isShadowRunning()) {
             return "No running Shadow PostgreSQL container found.";
         }
@@ -220,7 +224,6 @@ public class ContainerService {
 
         if (normalizedSql.startsWith("DROP DATABASE")
                 || normalizedSql.startsWith("DROP SCHEMA")) {
-
             return "Migration blocked: Dangerous SQL operation is not allowed!";
         }
 
@@ -229,11 +232,28 @@ public class ContainerService {
         String password = getPassword();
 
         try (Connection connection =
-                     DriverManager.getConnection(jdbcUrl, username, password);
-             Statement statement = connection.createStatement()) {
+                     DriverManager.getConnection(jdbcUrl, username, password)) {
 
-            statement.execute(sql);
+            // Check whether the exact migration already exists in history
+            String checkSql =
+                    "SELECT COUNT(*) FROM migration_history WHERE migration_sql = ?";
 
+            try (var checkStatement = connection.prepareStatement(checkSql)) {
+                checkStatement.setString(1, sql);
+
+                try (ResultSet resultSet = checkStatement.executeQuery()) {
+                    if (resultSet.next() && resultSet.getInt(1) > 0) {
+                        return "Migration already exists in history.";
+                    }
+                }
+            }
+
+            // Execute migration
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(sql);
+            }
+
+            // Save successful migration
             String historySql =
                     "INSERT INTO migration_history (migration_sql) VALUES (?)";
 
@@ -247,14 +267,9 @@ public class ContainerService {
             return "Migration executed successfully!";
 
         } catch (SQLException e) {
-
             return "Migration failed: " + e.getMessage();
         }
     }
-
-    // =========================
-    // MIGRATION HISTORY
-    // =========================
 
     public String getMigrationHistory() {
 
