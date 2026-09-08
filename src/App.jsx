@@ -1,3 +1,4 @@
+```jsx
 import { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import "./App.css";
@@ -9,20 +10,28 @@ function App() {
   const [status, setStatus] = useState("Checking...");
   const [customers, setCustomers] = useState([]);
   const [migrationSql, setMigrationSql] = useState(
-     "ALTER TABLE customers ADD COLUMN address VARCHAR(200);"
+    "ALTER TABLE customers ADD COLUMN address VARCHAR(200);"
   );
-  
-const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");
+
+  // Check container status
   const checkStatus = async () => {
     try {
       const response = await fetch(`${API}/api/container/status`);
       const data = await response.text();
-      setStatus(data);
+
+      if (response.ok) {
+        setStatus(data);
+      } else {
+        setStatus("Container Error");
+      }
     } catch (error) {
+      console.error(error);
       setStatus("Backend Offline");
     }
   };
 
+  // Start container
   const startContainer = async () => {
     try {
       setMessage("Starting database container...");
@@ -32,13 +41,20 @@ const [message, setMessage] = useState("");
       });
 
       const data = await response.text();
-      setMessage(data);
-      checkStatus();
+
+      if (response.ok) {
+        setMessage(`✅ ${data}`);
+        await checkStatus();
+      } else {
+        setMessage(`❌ ${data}`);
+      }
     } catch (error) {
-      setMessage("Failed to start container.");
+      console.error(error);
+      setMessage("❌ Failed to connect to backend.");
     }
   };
 
+  // Seed database
   const seedDatabase = async () => {
     try {
       setMessage("Seeding database...");
@@ -48,62 +64,72 @@ const [message, setMessage] = useState("");
       });
 
       const data = await response.text();
-      setMessage(data);
-      loadCustomers();
+
+      if (response.ok) {
+        setMessage(`✅ ${data}`);
+        await loadCustomers();
+      } else {
+        setMessage(`❌ ${data}`);
+      }
     } catch (error) {
-      setMessage("Failed to seed database.");
+      console.error(error);
+      setMessage("❌ Failed to seed database.");
     }
   };
 
+  // Load customers
   const loadCustomers = async () => {
     try {
       const response = await fetch(`${API}/api/container/customers`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText);
+      }
+
       const data = await response.json();
       setCustomers(data);
     } catch (error) {
-      setMessage("Could not load customers.");
+      console.error("Customer loading error:", error);
+      setMessage("❌ Could not load customers.");
     }
   };
-const runMigration = async () => {
-  if (!migrationSql.trim()) {
-    setMessage("Please enter migration SQL.");
-    return;
-  }
 
-  try {
-    setMessage("Running migration...");
-
-    const response = await fetch(`${API}/api/container/migrate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sql: migrationSql,
-      }),
-    });
-
-    const data = await response.text();
-
-    if (response.ok) {
-      setMessage(`✅ ${data}`);
-
-      
-
-      loadCustomers();
-    } else {
-      setMessage(`❌ ${data}`);
-
-      
+  // Run migration
+  const runMigration = async () => {
+    if (!migrationSql.trim()) {
+      setMessage("Please enter migration SQL.");
+      return;
     }
-  } catch (error) {
-    setMessage("❌ Migration request failed.");
 
-    
-  }
-};
-  
+    try {
+      setMessage("Running migration...");
 
+      const response = await fetch(`${API}/api/container/migrate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sql: migrationSql,
+        }),
+      });
+
+      const data = await response.text();
+
+      if (response.ok) {
+        setMessage(`✅ ${data}`);
+        await loadCustomers();
+      } else {
+        setMessage(`❌ ${data}`);
+      }
+    } catch (error) {
+      console.error("Migration error:", error);
+      setMessage("❌ Migration request failed.");
+    }
+  };
+
+  // Stop container
   const stopContainer = async () => {
     try {
       setMessage("Stopping database container...");
@@ -113,13 +139,21 @@ const runMigration = async () => {
       });
 
       const data = await response.text();
-      setMessage(data);
-      checkStatus();
+
+      if (response.ok) {
+        setMessage(`✅ ${data}`);
+        setCustomers([]);
+        await checkStatus();
+      } else {
+        setMessage(`❌ ${data}`);
+      }
     } catch (error) {
-      setMessage("Failed to stop container.");
+      console.error(error);
+      setMessage("❌ Failed to stop container.");
     }
   };
 
+  // Initial status check
   useEffect(() => {
     checkStatus();
     loadCustomers();
@@ -127,6 +161,8 @@ const runMigration = async () => {
 
   return (
     <div className="app">
+
+      {/* HEADER */}
       <header className="header">
         <div>
           <h1>ShadowBase</h1>
@@ -140,6 +176,8 @@ const runMigration = async () => {
       </header>
 
       <main className="dashboard">
+
+        {/* HERO */}
         <section className="hero-card">
           <div>
             <span className="badge">DATABASE MIGRATION PLATFORM</span>
@@ -158,81 +196,116 @@ const runMigration = async () => {
 
           <div className="hero-icon">DB</div>
         </section>
-          <MetricsDashboard />
+
+        {/* METRICS */}
+        <MetricsDashboard />
+
+        {/* MAIN CARDS */}
         <section className="cards">
+
+          {/* CONTAINER CARD */}
           <div className="card">
             <div className="card-icon">01</div>
+
             <h3>Database Container</h3>
+
             <p>
               Start and manage an isolated PostgreSQL container for migration
               testing.
             </p>
 
             <div className="button-group">
-              <button onClick={startContainer}>Start Container</button>
-              <button className="secondary" onClick={checkStatus}>
+              <button onClick={startContainer}>
+                Start Container
+              </button>
+
+              <button
+                className="secondary"
+                onClick={checkStatus}
+              >
                 Check Status
               </button>
             </div>
           </div>
 
+          {/* SEED CARD */}
           <div className="card">
             <div className="card-icon">02</div>
+
             <h3>Seed Database</h3>
+
             <p>
               Create the initial database schema and sample customer records.
             </p>
 
-            <button onClick={seedDatabase}>Seed Database</button>
+            <button onClick={seedDatabase}>
+              Seed Database
+            </button>
           </div>
 
+          {/* MIGRATION CARD */}
           <div className="card">
             <div className="card-icon">03</div>
+
             <h3>Migration Runner</h3>
+
             <p>
               Execute schema changes inside the ShadowBase environment.
             </p>
 
             <div className="editor-container">
-  <Editor
-    height="180px"
-    defaultLanguage="sql"
-    theme="vs-dark"
-    value={migrationSql}
-    onChange={(value) => setMigrationSql(value || "")}
-    options={{
-      minimap: { enabled: false },
-      fontSize: 14,
-      wordWrap: "on",
-      automaticLayout: true,
-      lineNumbers: "on",
-      scrollBeyondLastLine: false,
-      padding: {
-        top: 12,
-        bottom: 12,
-      },
-    }}
-  />
-</div>
+              <Editor
+                height="180px"
+                defaultLanguage="sql"
+                theme="vs-dark"
+                value={migrationSql}
+                onChange={(value) =>
+                  setMigrationSql(value || "")
+                }
+                options={{
+                  minimap: {
+                    enabled: false,
+                  },
+                  fontSize: 14,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  lineNumbers: "on",
+                  scrollBeyondLastLine: false,
+                  padding: {
+                    top: 12,
+                    bottom: 12,
+                  },
+                }}
+              />
+            </div>
 
-            <button onClick={runMigration}>Run Migration</button>
+            <button onClick={runMigration}>
+              Run Migration
+            </button>
           </div>
+
         </section>
 
+        {/* DATABASE SECTION */}
         <section className="database-section">
+
           <div className="section-header">
             <div>
               <span className="badge">SHADOW DATABASE</span>
               <h2>Customers Table</h2>
             </div>
 
-            <button className="secondary" onClick={loadCustomers}>
+            <button
+              className="secondary"
+              onClick={loadCustomers}
+            >
               Refresh
             </button>
           </div>
 
           <div className="table-container">
             <table>
+
               <thead>
                 <tr>
                   <th>ID</th>
@@ -245,42 +318,79 @@ const runMigration = async () => {
               </thead>
 
               <tbody>
+
                 {customers.length > 0 ? (
+
                   customers.map((customer, index) => (
+
                     <tr key={customer.id || index}>
+
                       <td>{customer.id}</td>
+
                       <td>{customer.name}</td>
+
                       <td>{customer.email}</td>
-                      <td>{customer.phone || "-"}</td>
-                      <td>{customer.city || "-"}</td>
-                      <td>{customer.address || "-"}</td>
+
+                      <td>
+                        {customer.phone || "-"}
+                      </td>
+
+                      <td>
+                        {customer.city || "-"}
+                      </td>
+
+                      <td>
+                        {customer.address || "-"}
+                      </td>
+
                     </tr>
+
                   ))
+
                 ) : (
+
                   <tr>
-                    <td colSpan="6" className="empty">
+                    <td
+                      colSpan="6"
+                      className="empty"
+                    >
                       No customer records loaded.
                     </td>
                   </tr>
+
                 )}
+
               </tbody>
+
             </table>
           </div>
+
         </section>
 
+        {/* BOTTOM SECTION */}
         <section className="bottom-section">
+
           <div className="message-box">
             <strong>System Message</strong>
-            <p>{message || "Ready."}</p>
+
+            <p>
+              {message || "Ready."}
+            </p>
           </div>
 
-          <button className="danger" onClick={stopContainer}>
+          <button
+            className="danger"
+            onClick={stopContainer}
+          >
             Stop Container
           </button>
+
         </section>
+
       </main>
     </div>
   );
 }
 
 export default App;
+```
