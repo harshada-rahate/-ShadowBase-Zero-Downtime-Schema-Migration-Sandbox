@@ -575,3 +575,75 @@ tbody tr:hover td {
     grid-template-columns: 1fr;
   }
 }
+.migration-history {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.migration-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.migration-info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.migration-info strong {
+  font-size: 15px;
+}
+
+.migration-info span {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.migration-info code {
+  font-size: 13px;
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  overflow-x: auto;
+}
+
+.migration-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.migration-status {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.migration-status.success {
+  color: #4ade80;
+}
+
+.migration-status.failed {
+  color: #f87171;
+}
+
+.migration-status.running {
+  color: #facc15;
+}
+
+.migration-status.rolled-back {
+  color: #60a5fa;
+}
+
+.migration-actions .danger {
+  margin: 0;
+}
